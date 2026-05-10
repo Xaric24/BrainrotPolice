@@ -404,6 +404,7 @@ end)
 -- Loader Txt
 local uilib = {}
 local currentOpen = nil
+local switchin = false
 
 function uilib:EndLoad()
     loaderLoop:Disconnect()
@@ -502,7 +503,10 @@ function uilib:Tab(tabName, tabIco)
     UIListLayout.Parent = SectionContainer
 
     TabBtn.MouseButton1Click:Connect(function()
+        if switchin then return end
         if currentOpen == tabName then return end
+
+        switchin = true
 
         if currentOpen then
             TweenService:Create(
@@ -534,6 +538,8 @@ function uilib:Tab(tabName, tabIco)
         end
 
         currentOpen = tabName
+
+        switchin = false
     end)
 
     local elements = {}
@@ -543,7 +549,7 @@ function uilib:Tab(tabName, tabIco)
         NotSupportedMain.BackgroundTransparency = 1
         NotSupportedMain.Name = "NotSupportedMain"
         NotSupportedMain.BorderColor3 = Color3.fromRGB(0, 0, 0)
-        NotSupportedMain.Size = UDim2.new(0, 390, 0, 222)
+        NotSupportedMain.Size = UDim2.new(0.972, 0, 0.718, 0)
         NotSupportedMain.BorderSizePixel = 0
         NotSupportedMain.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
         NotSupportedMain.Parent = SectionContainer
@@ -730,6 +736,10 @@ function uilib:Tab(tabName, tabIco)
         end)
 
         GameslistButton.MouseButton1Click:Connect(function()
+            if switchin then return end
+
+            switchin = true
+
             TweenService:Create(
                 SectionCanvas,
                 TweenInfo.new(
@@ -756,6 +766,152 @@ function uilib:Tab(tabName, tabIco)
             SectionDock["Games List"].Interactable = true
 
             currentOpen = "Games List"
+
+            switchin = false
+        end)
+    end
+
+    function elements:Button(elementName, cb)
+        local ButtonMain = Instance.new("Frame")
+        ButtonMain.BackgroundTransparency = 1
+        ButtonMain.Name = "ButtonMain"
+        ButtonMain.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        ButtonMain.Size = UDim2.new(0.972000002861023, 0, 0.18777988851070404, 0)
+        ButtonMain.BorderSizePixel = 0
+        ButtonMain.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        ButtonMain.Parent = SectionContainer
+
+        local ContentFrame = Instance.new("ImageButton")
+        ContentFrame.Size = UDim2.new(1, 0, 0.9111184477806091, 0)
+        ContentFrame.Name = "ContentFrame"
+        ContentFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        ContentFrame.Selectable = false
+        ContentFrame.BorderSizePixel = 0
+        ContentFrame.BackgroundColor3 = Color3.fromRGB(57, 61, 81)
+        ContentFrame.Parent = ButtonMain
+
+        local UICorner = Instance.new("UICorner")
+        UICorner.Parent = ContentFrame
+
+        local UIStroke = Instance.new("UIStroke")
+        UIStroke.Color = Color3.fromRGB(130, 139, 185)
+        UIStroke.BorderStrokePosition = Enum.BorderStrokePosition.Inner
+        UIStroke.Parent = ContentFrame
+
+        local elementtitle = Instance.new("TextLabel")
+        elementtitle.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+        elementtitle.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
+        elementtitle.AnchorPoint = Vector2.new(0.5, 0.5)
+        elementtitle.TextSize = 14
+        elementtitle.Size = UDim2.new(0.8721153736114502, 0, 0.445485919713974, 0)
+        elementtitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+        elementtitle.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        elementtitle.Text = "ts a button"
+        elementtitle.Name = "elementtitle"
+        elementtitle.TextWrapped = true
+        elementtitle.BackgroundTransparency = 1
+        elementtitle.TextXAlignment = Enum.TextXAlignment.Left
+        elementtitle.Position = UDim2.new(0.5, 0, 0.5, 0)
+        elementtitle.BorderSizePixel = 0
+        elementtitle.TextScaled = true
+        elementtitle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        elementtitle.Parent = ContentFrame
+        applyFont(
+            elementtitle,
+            "georgia",
+            Enum.FontWeight.Regular,
+            Enum.FontStyle.Italic
+        )
+
+        ContentFrame.MouseButton1Click:Connect(function()
+            pcall(cb)
+        end)
+    end
+
+    function elements:Toggle(elementName, defState, cb)
+        local isToggled = defState
+
+        local ToggleMain = Instance.new("Frame")
+        ToggleMain.BackgroundTransparency = 1
+        ToggleMain.Name = "ToggleMain"
+        ToggleMain.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        ToggleMain.Size = UDim2.new(0.972000002861023, 0, 0.18777988851070404, 0)
+        ToggleMain.BorderSizePixel = 0
+        ToggleMain.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        ToggleMain.Parent = SectionContainer
+
+        local ContentFrame = Instance.new("ImageButton")
+        ContentFrame.Size = UDim2.new(1, 0, 0.9111184477806091, 0)
+        ContentFrame.Name = "ContentFrame"
+        ContentFrame.Active = false
+        ContentFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        ContentFrame.Selectable = false
+        ContentFrame.BorderSizePixel = 0
+        ContentFrame.BackgroundColor3 = Color3.fromRGB(57, 61, 81)
+        ContentFrame.Parent = ToggleMain
+
+        local UICorner = Instance.new("UICorner")
+        UICorner.Parent = ContentFrame
+
+        local UIStroke = Instance.new("UIStroke")
+        UIStroke.Color = Color3.fromRGB(130, 139, 185)
+        UIStroke.BorderStrokePosition = Enum.BorderStrokePosition.Inner
+        UIStroke.Parent = ContentFrame
+
+        local elementtitle = Instance.new("TextLabel")
+        elementtitle.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+        elementtitle.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
+        elementtitle.AnchorPoint = Vector2.new(0.5, 0.5)
+        elementtitle.TextSize = 14
+        elementtitle.Size = UDim2.new(0.7875059247016907, 0, 0.4454859495162964, 0)
+        elementtitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+        elementtitle.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        elementtitle.Text = "ts a toggle"
+        elementtitle.Name = "elementtitle"
+        elementtitle.TextWrapped = true
+        elementtitle.BackgroundTransparency = 1
+        elementtitle.TextXAlignment = Enum.TextXAlignment.Left
+        elementtitle.Position = UDim2.new(0.4576953053474426, 0, 0.49999967217445374, 0)
+        elementtitle.BorderSizePixel = 0
+        elementtitle.TextScaled = true
+        elementtitle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        elementtitle.Parent = ContentFrame
+        applyFont(
+            elementtitle,
+            "georgia",
+            Enum.FontWeight.Regular,
+            Enum.FontStyle.Italic
+        )
+
+        local toggledindicator = Instance.new("TextLabel")
+        toggledindicator.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+        toggledindicator.TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
+        toggledindicator.AnchorPoint = Vector2.new(0.5, 0.5)
+        toggledindicator.TextSize = 14
+        toggledindicator.Size = UDim2.new(0.05935234576463699, 0, 0.4454859495162964, 0)
+        toggledindicator.TextColor3 = Color3.fromRGB(255, 255, 255)
+        toggledindicator.BorderColor3 = Color3.fromRGB(0, 0, 0)
+        toggledindicator.Text = isToggled and "🟢" or "🔴"
+        toggledindicator.Name = "toggledindicator"
+        toggledindicator.TextWrapped = true
+        toggledindicator.BackgroundTransparency = 1
+        toggledindicator.TextXAlignment = Enum.TextXAlignment.Right
+        toggledindicator.Position = UDim2.new(0.9063810110092163, 0, 0.49999967217445374, 0)
+        toggledindicator.BorderSizePixel = 0
+        toggledindicator.TextScaled = true
+        toggledindicator.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        toggledindicator.Parent = ContentFrame
+
+        ContentFrame.MouseButton1Click:Connect(function()
+            if isToggled then
+                isToggled = false
+                toggledindicator.Text = "🔴"
+            else
+                isToggled = true
+                toggledindicator.Text = "🟢"
+            end
+
+            pcall(cb, isToggled)
         end)
     end
 
