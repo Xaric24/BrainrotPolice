@@ -951,7 +951,7 @@ function uilib:Tab(tabName, tabIco)
         elementtitle.Size = UDim2.new(0.5464974641799927, 0, 0.4454859495162964, 0)
         elementtitle.TextColor3 = Color3.fromRGB(255, 255, 255)
         elementtitle.BorderColor3 = Color3.fromRGB(0, 0, 0)
-        elementtitle.Text = elementtitle
+        elementtitle.Text = elementName
         elementtitle.Name = "elementtitle"
         elementtitle.TextWrapped = true
         elementtitle.BackgroundTransparency = 1
