@@ -43,7 +43,7 @@ for _, sect in pairs(Sections) do
     sect.TabBtn.MouseEnter:Connect(function()
         for _, stroke in pairs(sect.TabBtn:GetChildren()) do
             if stroke.Name == "InnerShadow" then
-                stroke.Enabled = true
+                stroke.Transparency = 0.95
             end
         end
     end)
@@ -51,7 +51,7 @@ for _, sect in pairs(Sections) do
     sect.TabBtn.MouseLeave:Connect(function()
         for _, stroke in pairs(sect.TabBtn:GetChildren()) do
             if stroke.Name == "InnerShadow" then
-                stroke.Enabled = false
+                stroke.Transparency = 1
             end
         end
     end)
@@ -66,6 +66,7 @@ for _, sect in pairs(Sections) do
 
         sect.TabBtn.BackgroundTransparency = 0
         sect.Container:TweenPosition(UDim2.new(0.5, 0, 0, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.2)
+        sect.Visible = true
 
         CurSection = sect
     end)
