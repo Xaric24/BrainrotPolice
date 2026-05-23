@@ -23,7 +23,8 @@ return function(section)
                 dashev:FireServer("StartCharge")
                 task.wait()
                 dashev:FireServer(3)
-                task.wait()
+
+                task.wait(5)
                 
                 local bestArea = speedWalls.SpeedWall_1
                 for _, v in pairs(speedWalls:GetChildren()) do
@@ -35,10 +36,10 @@ return function(section)
 
                 local char = plr.Character
                 char:MoveTo(bestArea.Position - Vector3.new(0, 500, 0))
-                task.wait(0.1)
+                task.wait(1)
                 dashev:FireServer("EndWarp")
 
-                task.wait(0.1)
+                task.wait(5)
             end
         else
             getgenv().FarmBrainrots = false
