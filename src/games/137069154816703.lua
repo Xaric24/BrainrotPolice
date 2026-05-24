@@ -11,19 +11,20 @@ return function(section)
             getgenv().FarmRots = true
 
             while getgenv().FarmRots do
-                plr.Character:MoveTo(Vector3.new(-2494, 4, -726))
-                task.wait(0.5)
                 for _, br in pairs(workspace.EntitiesFolder:GetChildren()) do
+                    plr.Character:MoveTo(Vector3.new(-2494, 4, -726))
+                    task.wait(0.5)
                     if not br:GetAttribute("SpawnZone") == 22 or not br.PrimaryPart then
                         continue
                     end
 
                     plr.Character:MoveTo(br.PrimaryPart.Position)
                     task.wait()
-                    repeat fireproximityprompt(br.PrimaryPart.TakeBrainrotPrompt) task.wait() until br.PrimaryPart:FindFirstChild("Attachment")
+                    repeat fireproximityprompt(br.PrimaryPart.TakeBrainrotPrompt) task.wait() until not br.PrimaryPart or br.PrimaryPart:FindFirstChild("Attachment")
                     plr.Character:MoveTo(Vector3.new(77, 4, -729))
                     task.wait(1)
                 end
+                task.wait()
             end
         else
             getgenv().FarmRots = false
