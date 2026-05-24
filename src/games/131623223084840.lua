@@ -87,7 +87,7 @@ return function(section)
                             fireproximityprompt(br.Root.TakePrompt)
                             task.wait()
                         until plr.Character:FindFirstChild("RenderedBrainrot")
-                        task.wait()
+                        task.wait(0.1)
                         moveTo(Vector3.new(121, 3, 19))
                     end
                 end
