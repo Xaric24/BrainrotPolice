@@ -35,7 +35,7 @@ return function(section)
                         and math.abs(localPos.Z) <= halfSize.Z then
                             plr.Character:MoveTo(pos)
                             task.wait()
-                            repeat fireproximityprompt() task.wait() until v:FindFirstChild("WeldConstraint")
+                            repeat fireproximityprompt(v.ProximityPrompt) task.wait() until v:FindFirstChild("WeldConstraint")
                             plr.Character:MoveTo(Vector3.new(-54, 31, -2196))
 
                             task.wait(0.5)
