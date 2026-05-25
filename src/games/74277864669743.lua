@@ -7,8 +7,9 @@ return function(section)
     getgenv().Farming = false
     getgenv().FarmWings = false
     getgenv().AutoBest = false
+    getgenv().AutoCollect = false
 
-    elements:Label("Auto rejoin on kick recommended. (Settings tab)")
+    elements:Label("Auto rejoin on kick recommended. (Settings tab)", section)
 
     elements:Toggle("Farm Brainrots", section, function(v)
         if v then
@@ -73,6 +74,27 @@ return function(section)
             end
         else
             getgenv().AutoBest = false
+        end
+    end)
+
+    elements:Toggle("Auto Collect", section, function(v)
+        if v then
+            getgenv().AutoCollect = true
+
+            while getgenv().AutoCollect do
+                for _, v in pairs(workspace.Plots:GetChildren()) do
+                    if v:GetAttribute("Owner") == plr.UserId then
+                        for i, pod in pairs(v.Podiums:GetChildren()) do
+                            firetouchinterest(plr.Character.Head, pod.Collect, true)
+                            task.wait()
+                            firetouchinterest(plr.Character.Head, pod.Collect, false)
+                        end
+                    end
+                end
+                task.wait(2)
+            end
+        else
+            getgenv().AutoCollect = false
         end
     end)
 end
