@@ -4,6 +4,8 @@ For a more in depth explanation and rundown of this script, I recommend you chec
 
 local env = getgenv()
 
+if not isfolder("BrainrotPolice") then makefolder("BrainrotPolice") end
+
 function env.import(id)
     return game:GetObjects(id)[1]
 end
