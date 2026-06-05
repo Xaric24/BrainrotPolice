@@ -2,39 +2,35 @@
 
 return function(section)
     local elements = loadstring(game:HttpGet(getgitpath("src").."elements.lua"))()
+    local utils = loadstring(game:HttpGet(getgitpath("src").."utils.lua"))()
 
-    local repStorage = game:GetService("ReplicatedStorage")
     local plr = game:GetService("Players").LocalPlayer
-    local brainrotFold = workspace.GameFolder.Brainrots
+    local brainrotFold = workspace:WaitForChild("GameFolder"):WaitForChild("Brainrots")
 
     getgenv().Farming = false
 
     local function grabem(where)
-        local char = plr.Character
+        if not where then return end
+
         for _, br in pairs(where:GetChildren()) do
-            if not br.PrimaryPart then continue end
-            char:MoveTo(br.PrimaryPart.Position)
+            local prompt = br.PrimaryPart and br.PrimaryPart:FindFirstChildOfClass("ProximityPrompt")
+            if not prompt then continue end
+
+            utils.MoveCharacter(plr, br.PrimaryPart.Position)
             task.wait(0.5)
-            fireproximityprompt(br.PrimaryPart.ProximityPrompt)
+            utils.FirePrompt(prompt)
             task.wait(0.25)
-            char:MoveTo(Vector3.new(-2, 4, 13))
+            utils.MoveCharacter(plr, Vector3.new(-2, 4, 13))
             task.wait(0.5)
         end
     end
 
     elements:Toggle("Farming", section, function(isOn)
-        if isOn then
-            getgenv().Farming = true
-            while getgenv().Farming do
-
-                grabem(brainrotFold.Infinity)
-                grabem(brainrotFold.Godly)
-                grabem(brainrotFold.Secret)
-                grabem(brainrotFold.Celestial)
-                task.wait(1)
-            end
-        else
-            getgenv().Farming = false
-        end
+        utils.StartToggleLoop("Farming", isOn, function()
+            grabem(brainrotFold:FindFirstChild("Infinity"))
+            grabem(brainrotFold:FindFirstChild("Godly"))
+            grabem(brainrotFold:FindFirstChild("Secret"))
+            grabem(brainrotFold:FindFirstChild("Celestial"))
+        end, 1)
     end)
 end

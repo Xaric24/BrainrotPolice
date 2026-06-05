@@ -2,33 +2,17 @@
 
 return function(section)
     local elements = loadstring(game:HttpGet(getgitpath("src").."elements.lua"))()
+    local utils = loadstring(game:HttpGet(getgitpath("src").."utils.lua"))()
     getgenv().farming = false
+    local remotes = game:GetService("ReplicatedStorage"):WaitForChild("Remotes")
 
     elements:Toggle("Farming", section, function(v)
-        if v then
-            getgenv().farming = true
-
-            while getgenv().farming do
-                local Event = game:GetService("ReplicatedStorage").Remotes.DreamStateChanged
-                Event:FireServer(
-                    true
-                )
-
-                local Event = game:GetService("ReplicatedStorage").Remotes.RequestDreamBrainrots
-                Event:FireServer()
-
-                local Event = game:GetService("ReplicatedStorage").Remotes.PickupDreamBrainrot
-                Event:FireServer(
-                    "60"
-                )
-
-                task.wait()
-                local Event = game:GetService("ReplicatedStorage").Remotes.RequestDreamWallExit
-                Event:FireServer()
-                task.wait()
-            end
-        else
-            getgenv().farming = false
-        end
+        utils.StartToggleLoop("farming", v, function()
+            remotes.DreamStateChanged:FireServer(true)
+            remotes.RequestDreamBrainrots:FireServer()
+            remotes.PickupDreamBrainrot:FireServer("60")
+            task.wait()
+            remotes.RequestDreamWallExit:FireServer()
+        end, 0.05)
     end)
 end

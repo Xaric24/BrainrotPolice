@@ -3,10 +3,11 @@
 
 return (function(section)
     local elements = loadstring(game:HttpGet(getgitpath("src").."elements.lua"))()
+    local utils = loadstring(game:HttpGet(getgitpath("src").."utils.lua"))()
 
     local player = game:GetService("Players").LocalPlayer
 
-    -- // this is needed to prevent the server not updating the player's position when teleporting, which can cause issues with item spawns
+    -- Keep teleports paced so streamed objects and server position stay in sync.
     local ping = game:GetService("Stats").Network.ServerStatsItem["Data Ping"]
 
     local farming = false
@@ -33,36 +34,39 @@ return (function(section)
     end
 
     local function teleportTo(pos)
+        local root = utils.GetRoot(player)
+        if not root then return false end
+
         pos = typeof(pos) == "Vector3" and CFrame.new(pos) or pos
-        player.Character.HumanoidRootPart.CFrame = pos
+        root.CFrame = pos
 
         local waitTime = ((ping:GetValue() * 4) / 1000)
         task.wait(waitTime)
 
         waitForUnpause()
+        return true
     end
 
-    -- // needed to store the brainrots, im too lazy to write a proper system for placing the brainrot (maybe i will if vaehz actually pulls this to main)
     local function putToolsAway()
-        for i, part in player.Character:GetChildren() do
+        local character = utils.GetCharacter(player)
+        if not character then return end
+
+        for _, part in character:GetChildren() do
             if part:IsA("Tool") then
                 part.Parent = player.Backpack
             end
         end
     end
 
-    -- // im 16 years old talking writing brainrot scripts, wtf am i doing????
     local function getBrainrot(rot)
-        -- // use wait for child since streaming can cause the mesh to not be there when the brainrot is.
         local brainrotMesh = rot:WaitForChild("Mesh", 3) -- we hate infinite yield!!!
         if not brainrotMesh then return end
 		
         local proximityPrompt = brainrotMesh:FindFirstChildWhichIsA("ProximityPrompt")
         if not proximityPrompt then return end
 
-        -- // teleport to the rot
-        teleportTo(rot.WorldPivot)
-        fireproximityprompt(proximityPrompt)
+        if not teleportTo(rot.WorldPivot) then return end
+        utils.FirePrompt(proximityPrompt)
 
         task.wait()
 

@@ -2,34 +2,32 @@
 
 return function(section)
     local elements = loadstring(game:HttpGet(getgitpath("src").."elements.lua"))()
+    local utils = loadstring(game:HttpGet(getgitpath("src").."utils.lua"))()
     getgenv().farming = false
 
     local plr = game:GetService("Players").LocalPlayer
+    local returnEvent = game:GetService("ReplicatedStorage").Packages._Index["sleitnick_net@0.2.0"].net["RE/BG_ReturnToBase"]
 
     elements:Toggle("Farming", section, function(v)
-        if v then
-            getgenv().farming = true
+        utils.StartToggleLoop("farming", v, function()
+            utils.MoveCharacter(plr, Vector3.new(12738, 1490, 231))
 
-            while getgenv().farming do
+            local spawner = workspace:FindFirstChild("BG_BrainrotSpawner")
+            if not spawner then return end
 
-                plr.Character:MoveTo(Vector3.new(12738, 1490, 231))
+            for _, holder in pairs(spawner:GetChildren()) do
+                local br = holder:FindFirstChildOfClass("Model")
+                local prompt = br and br.PrimaryPart and br.PrimaryPart:FindFirstChildOfClass("ProximityPrompt")
 
-                for _, v in pairs(workspace.BG_BrainrotSpawner:GetChildren()) do
-                    local br = v:FindFirstChildOfClass("Model")
-                    if v.Name == "Mythical" and br then
-                        --plr.Character:MoveTo(br.PrimaryPart.Position)
-                        if not br.PrimaryPart:FindFirstChildOfClass("ProximityPrompt") then continue end
-                        repeat fireproximityprompt(br.PrimaryPart:FindFirstChildOfClass("ProximityPrompt")) task.wait() until br.Parent ~= v
-                        local Event = game:GetService("ReplicatedStorage").Packages._Index["sleitnick_net@0.2.0"].net["RE/BG_ReturnToBase"]
-                        Event:FireServer()
-                        task.wait(1)
-                    end
+                if holder.Name == "Mythical" and br and prompt then
+                    repeat
+                        utils.FirePrompt(prompt)
+                        task.wait()
+                    until not getgenv().farming or br.Parent ~= holder
+                    returnEvent:FireServer()
+                    task.wait(1)
                 end
-
-                task.wait(0.1)
             end
-        else
-            getgenv().farming = false
-        end
+        end, 0.1)
     end)
 end

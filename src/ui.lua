@@ -1,12 +1,18 @@
 local hui = gethui or get_hidden_gui
-local getexec = identifyexecutor
+local getexec = identifyexecutor or function()
+    return "Unknown"
+end
 local coregui = game:GetService("CoreGui")
 local userinputservice = game:GetService("UserInputService")
 local httpservice = game:GetService("HttpService")
 local exservice = game:GetService("ExperienceService")
-local tweenservice = game:GetService("TweenService")
+local utils = loadstring(game:HttpGet(getgitpath("src") .. "utils.lua"))()
 
 local ui = import("rbxassetid://75281832304062")
+if not ui then
+    warn("[BrainrotPolice] UI asset failed to load.")
+    return
+end
 
 ui.Parent = hui and hui() or coregui
 
@@ -48,6 +54,68 @@ local Sections = {
 
 local CurSection
 
+local function switchSection(sect)
+    if CurSection == sect then return end
+
+    if CurSection then
+        CurSection.TabBtn.BackgroundTransparency = 1
+        CurSection.Container:TweenPosition(UDim2.new(0.5, 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.2)
+    end
+
+    sect.TabBtn.BackgroundTransparency = 0
+    sect.Container:TweenPosition(UDim2.new(0.5, 0, 0, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.2)
+    sect.Container.Visible = true
+
+    CurSection = sect
+end
+
+local function fetch(path)
+    local ok, body = pcall(function()
+        return game:HttpGet(path)
+    end)
+
+    if ok and body and body ~= "404: Not Found" then
+        return body
+    end
+
+    return nil
+end
+
+local function decodeJson(path, fallback)
+    local body = fetch(path)
+    if not body then
+        return fallback
+    end
+
+    local ok, decoded = pcall(function()
+        return httpservice:JSONDecode(body)
+    end)
+
+    if ok and decoded then
+        return decoded
+    end
+
+    return fallback
+end
+
+local function loadModule(source)
+    if not source or #source == 0 then
+        return nil
+    end
+
+    local loaded = loadstring(source)
+    if not loaded then
+        return nil
+    end
+
+    local ok, module = pcall(loaded)
+    if ok then
+        return module
+    end
+
+    return nil
+end
+
 for _, sect in pairs(Sections) do
     sect.TabBtn.MouseEnter:Connect(function()
         for _, stroke in pairs(sect.TabBtn:GetChildren()) do
@@ -66,18 +134,7 @@ for _, sect in pairs(Sections) do
     end)
 
     sect.TabBtn.MouseButton1Click:Connect(function()
-        if CurSection == sect then return end
-
-        if CurSection then
-            CurSection.TabBtn.BackgroundTransparency = 1
-            CurSection.Container:TweenPosition(UDim2.new(0.5, 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.2)
-        end
-
-        sect.TabBtn.BackgroundTransparency = 0
-        sect.Container:TweenPosition(UDim2.new(0.5, 0, 0, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.2)
-        sect.Container.Visible = true
-
-        CurSection = sect
+        switchSection(sect)
     end)
 end
 
@@ -131,46 +188,46 @@ Sections.Home.Container.discan.Text = Sections.Home.Container.discan.Text:gsub("
 Sections.Home.Container.ythead.Text = Sections.Home.Container.ythead.Text:gsub("redacted", "YouTube")
 Sections.Home.Container.execLabel.Text = "Executor: " .. getexec()
 
+local gamePath = fetch(getgitpath("games") .. tostring(game.PlaceId) .. ".lua")
+local gameList = decodeJson(getgitpath("src") .. "gameslist.json", {})
+local creditsList = decodeJson(getgitpath("src") .. "credits.json", {})
+local elements = loadModule(fetch(getgitpath("src") .. "elements.lua"))
+if not elements then
+    warn("[BrainrotPolice] Elements failed to load.")
+    return
+end
 
-local ok, gamePath = pcall(function()
-    return game:HttpGet(getgitpath("games") .. tostring(game.PlaceId) .. ".lua")
-end)
-local gameList = httpservice:JSONDecode(game:HttpGet(getgitpath("src").. "gameslist.json"))
-local creditsList = httpservice:JSONDecode(game:HttpGet(getgitpath("src").. "credits.json"))
-local elements = loadstring(game:HttpGet(getgitpath("src").."elements.lua"))()
-if not ok or #gamePath == 0 or gamePath == "404: Not Found" then
+if not gamePath then
     local handledLocally = false
 
-    if getgenv().FileScripts then
-        if isfile("BrainrotPolice/"..tostring(game.PlaceId)..".lua") then
-            local gameModule = loadstring(readfile("BrainrotPolice/"..tostring(game.PlaceId)..".lua"))()
-            gameModule(Sections.Game.Container)
-            handledLocally = true
+    if getgenv().FileScripts and typeof(isfile) == "function" and typeof(readfile) == "function" then
+        local localPath = "BrainrotPolice/" .. tostring(game.PlaceId) .. ".lua"
+        if isfile(localPath) then
+            local gameModule = loadModule(readfile(localPath))
+            if gameModule then
+                utils.SafeCall(gameModule, Sections.Game.Container)
+                handledLocally = true
+            end
         end
     end
 
     if not handledLocally then
         elements:Unsupported(Sections.Game.Container, function()
-            if CurSection then
-                CurSection.TabBtn.BackgroundTransparency = 1
-                CurSection.Container:TweenPosition(UDim2.new(0.5, 0, 1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.2)
-            end
-
-            Sections.GamesList.TabBtn.BackgroundTransparency = 0
-            Sections.GamesList.Container:TweenPosition(UDim2.new(0.5, 0, 0, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.2)
-            Sections.GamesList.Container.Visible = true
-
-            CurSection = Sections.GamesList
+            switchSection(Sections.GamesList)
         end)
     end
 else
-    local gameModule = loadstring(gamePath)()
-    gameModule(Sections.Game.Container)
+    local gameModule = loadModule(gamePath)
+    if gameModule then
+        utils.SafeCall(gameModule, Sections.Game.Container)
+    else
+        elements:Label("Game script failed to load.", Sections.Game.Container)
+    end
 end
 
 for _, g in ipairs(gameList) do
     elements:Button(g.status .. " " .. g["game"], Sections.GamesList.Container, function()
-        exservice:LaunchExperience({placeId = g.id})
+        exservice:LaunchExperience({placeId = tonumber(g.id) or g.id})
     end)
 end
 

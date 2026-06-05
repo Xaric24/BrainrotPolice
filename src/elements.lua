@@ -1,4 +1,5 @@
 local elements = import("rbxassetid://113037265185555")
+local utils = loadstring(game:HttpGet(getgitpath("src") .. "utils.lua"))()
 local stuff = {}
 
 function stuff:Label(str, king)
@@ -12,7 +13,9 @@ function stuff:Button(str, king, cb)
     newBtn.TextLabel.Text = str
     newBtn.Parent = king
 
-    newBtn.MouseButton1Click:Connect(cb)
+    newBtn.MouseButton1Click:Connect(function()
+        utils.SafeCall(cb)
+    end)
 end
 
 function stuff:Toggle(str, king, cb)
@@ -28,12 +31,12 @@ function stuff:Toggle(str, king, cb)
             newTog.togglebg.BackgroundColor3 = Color3.fromRGB(59, 164, 57)
             newTog.togglebg.leftrightlol.AnchorPoint = Vector2.new(1, 0.5)
             newTog.togglebg.leftrightlol.Position = UDim2.new(1, 0, 0.5, 0)
-            cb(isTog)
+            utils.SafeCall(cb, isTog)
         else
             newTog.togglebg.BackgroundColor3 = Color3.fromRGB(164, 58, 58)
             newTog.togglebg.leftrightlol.AnchorPoint = Vector2.new(0, 0.5)
             newTog.togglebg.leftrightlol.Position = UDim2.new(0, 0, 0.5, 0)
-            cb(isTog)
+            utils.SafeCall(cb, isTog)
         end
     end)
 end
@@ -44,7 +47,7 @@ function stuff:Textbox(str, king, cb)
     newTb.Parent = king
 
     newTb.tbbg.Inp.FocusLost:Connect(function(ep)
-        cb(newTb.tbbg.Inp.Text)
+        utils.SafeCall(cb, newTb.tbbg.Inp.Text, ep)
     end)
 end
 
@@ -53,13 +56,21 @@ function stuff:Unsupported(king, cb)
     newUs.Parent = king
 
     newUs.suggestbtn.MouseButton1Click:Connect(function()
-        setclipboard("https://discord.gg/vaehz")
-        newUs.suggestbtn.Text = "Copied Link!"
-        wait(1)
-        newUs.suggestbtn.Text = "Suggest Game"
+        if typeof(setclipboard) == "function" then
+            setclipboard("https://discord.gg/vaehz")
+            newUs.suggestbtn.Text = "Copied Link!"
+            task.wait(1)
+            newUs.suggestbtn.Text = "Suggest Game"
+        else
+            newUs.suggestbtn.Text = "Clipboard Unsupported"
+            task.wait(1)
+            newUs.suggestbtn.Text = "Suggest Game"
+        end
     end)
 
-    newUs.glbtn.MouseButton1Click:Connect(cb)
+    newUs.glbtn.MouseButton1Click:Connect(function()
+        utils.SafeCall(cb)
+    end)
 end
 
 function stuff:CredHead(king, txt)

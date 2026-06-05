@@ -2,6 +2,7 @@
 
 return function(section)
     local elements = loadstring(game:HttpGet(getgitpath("src").."elements.lua"))()
+    local utils = loadstring(game:HttpGet(getgitpath("src").."utils.lua"))()
     getgenv().Farming = false
     getgenv().Selling = false
     getgenv().ChosenZone = nil
@@ -11,6 +12,7 @@ return function(section)
     local zonesFold = workspace.Zones
 
     local function parseValue(str)
+        str = tostring(str or ""):gsub("%s+", "")
         local suffixes = {
             K = 1e3,
             M = 1e6,
@@ -35,66 +37,62 @@ return function(section)
 
 
     elements:Textbox("Farm Zone (1-13)", section, function(v)
-        getgenv().ChosenZone = zonesFold["Zone" .. v]
+        local zoneNumber = tonumber(v)
+        if zoneNumber then
+            getgenv().ChosenZone = zonesFold:FindFirstChild("Zone" .. zoneNumber)
+        end
     end)
 
     elements:Toggle("Autofarm", section, function(v)
-        if v then
-            getgenv().Farming = true
+        utils.StartToggleLoop("Farming", v, function()
+            local zone = getgenv().ChosenZone
+            local objects = zone and zone:FindFirstChild("Objects")
+            local baseRoot = workspace:FindFirstChild("Bases")
+                and workspace.Bases:FindFirstChild(player.Name)
+                and workspace.Bases[player.Name]:FindFirstChild("Root")
+            if not objects or not baseRoot then return end
 
-            while getgenv().Farming do
-                local char = player.Character
-                if not char then continue end
+            for _, brainrot in pairs(objects:GetChildren()) do
+                if not getgenv().Farming then return end
 
-                for _, brainrot in pairs(getgenv().ChosenZone.Objects:GetChildren()) do
-                    if not getgenv().Farming then return end
-
-                    char:MoveTo(brainrot.PrimaryPart.Position)
+                local prompt = brainrot:FindFirstChildOfClass("ProximityPrompt")
+                if brainrot.PrimaryPart and prompt then
+                    utils.MoveCharacter(player, brainrot.PrimaryPart.Position)
                     repeat
-                        fireproximityprompt(brainrot.ProximityPrompt)
+                        utils.FirePrompt(prompt)
                         task.wait()
-                    until brainrot == nil or brainrot.Parent ~= getgenv().ChosenZone.Objects
+                    until not getgenv().Farming or brainrot.Parent ~= objects
 
-                    char:MoveTo(workspace.Bases[player.Name].Root.Position)
+                    utils.MoveCharacter(player, baseRoot.Position)
                     task.wait(0.5)
                 end
-
-                task.wait(1)
             end
-        else
-            getgenv().Farming = false
-        end
+        end, 1)
     end)
 
     elements:Textbox("Max price", section, function(v)
-        getgenv().MaxPrice = tonumber(v)
+        getgenv().MaxPrice = parseValue(v)
     end)
 
     elements:Toggle("Auto Sell", section, function(v)
-        if v then
-            getgenv().Selling = true
+        utils.StartToggleLoop("Selling", v, function()
+            local sellRemote = game:GetService("ReplicatedStorage").Shared.Classes.RemoteFunction.Remotes.EntityShared_SellEntity
 
-            while getgenv().Selling do
-                local char = player.Character
-                if not char then continue end
+            for _, brainrot in pairs(player.Backpack:GetChildren()) do
+                if brainrot.Name == "Bat" then continue end
 
-                for _, brainrot in pairs(player.Backpack:GetChildren()) do
-                    if brainrot.Name == "Bat" then continue end
-                    spawn(function()
-                        pcall(function()
-                            if parseValue(brainrot.Handle.ObjectInfo.Value.ValueLabel.Text) <= getgenv().MaxPrice then
-                                local Event = game:GetService("ReplicatedStorage").Shared.Classes.RemoteFunction.Remotes.EntityShared_SellEntity
-                                Event:InvokeServer(brainrot.Name)
-                            end
-                        end)
+                local valueLabel = brainrot:FindFirstChild("Handle")
+                    and brainrot.Handle:FindFirstChild("ObjectInfo")
+                    and brainrot.Handle.ObjectInfo:FindFirstChild("Value")
+                    and brainrot.Handle.ObjectInfo.Value:FindFirstChild("ValueLabel")
+
+                if valueLabel and parseValue(valueLabel.Text) <= getgenv().MaxPrice then
+                    utils.SafeCall(function()
+                        sellRemote:InvokeServer(brainrot.Name)
                     end)
                 end
-
-                task.wait(3)
             end
-        else
-            getgenv().Selling = false
-        end
+        end, 3)
     end)
 
     elements:Button("Redeem Codes", section, function()
