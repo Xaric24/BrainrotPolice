@@ -8,6 +8,81 @@ local httpservice = game:GetService("HttpService")
 local exservice = game:GetService("ExperienceService")
 local utils = loadstring(game:HttpGet(getgitpath("src") .. "utils.lua"))()
 
+local DEFAULT_CONFIG = {
+    settings = {
+        auto_rejoin_on_kick = false,
+        disable_3d_rendering = false
+    }
+}
+
+local function fetch(path)
+    local ok, body = pcall(function()
+        return game:HttpGet(path)
+    end)
+
+    if ok and body and body ~= "404: Not Found" then
+        return body
+    end
+
+    return nil
+end
+
+local function decodeJsonBody(body, fallback)
+    if not body then
+        return fallback
+    end
+
+    local ok, decoded = pcall(function()
+        return httpservice:JSONDecode(body)
+    end)
+
+    if ok and decoded then
+        return decoded
+    end
+
+    return fallback
+end
+
+local function decodeJson(path, fallback)
+    return decodeJsonBody(fetch(path), fallback)
+end
+
+local function readConfig()
+    if typeof(isfile) == "function" and typeof(readfile) == "function" and isfile("BrainrotPolice/Config.json") then
+        local config = decodeJsonBody(readfile("BrainrotPolice/Config.json"), DEFAULT_CONFIG)
+        config.settings = config.settings or {}
+        config.settings.auto_rejoin_on_kick = config.settings.auto_rejoin_on_kick == true
+        config.settings.disable_3d_rendering = config.settings.disable_3d_rendering == true
+        return config
+    end
+
+    return DEFAULT_CONFIG
+end
+
+local function writeConfig(config)
+    if typeof(writefile) == "function" then
+        writefile("BrainrotPolice/Config.json", httpservice:JSONEncode(config))
+    end
+end
+
+local function loadModule(source)
+    if not source or #source == 0 then
+        return nil
+    end
+
+    local loaded = loadstring(source)
+    if not loaded then
+        return nil
+    end
+
+    local ok, module = pcall(loaded)
+    if ok then
+        return module
+    end
+
+    return nil
+end
+
 local ui = import("rbxassetid://75281832304062")
 if not ui then
     warn("[BrainrotPolice] UI asset failed to load.")
@@ -67,53 +142,6 @@ local function switchSection(sect)
     sect.Container.Visible = true
 
     CurSection = sect
-end
-
-local function fetch(path)
-    local ok, body = pcall(function()
-        return game:HttpGet(path)
-    end)
-
-    if ok and body and body ~= "404: Not Found" then
-        return body
-    end
-
-    return nil
-end
-
-local function decodeJson(path, fallback)
-    local body = fetch(path)
-    if not body then
-        return fallback
-    end
-
-    local ok, decoded = pcall(function()
-        return httpservice:JSONDecode(body)
-    end)
-
-    if ok and decoded then
-        return decoded
-    end
-
-    return fallback
-end
-
-local function loadModule(source)
-    if not source or #source == 0 then
-        return nil
-    end
-
-    local loaded = loadstring(source)
-    if not loaded then
-        return nil
-    end
-
-    local ok, module = pcall(loaded)
-    if ok then
-        return module
-    end
-
-    return nil
 end
 
 for _, sect in pairs(Sections) do
@@ -188,6 +216,7 @@ Sections.Home.Container.discan.Text = Sections.Home.Container.discan.Text:gsub("
 Sections.Home.Container.ythead.Text = Sections.Home.Container.ythead.Text:gsub("redacted", "YouTube")
 Sections.Home.Container.execLabel.Text = "Executor: " .. getexec()
 
+local config = readConfig()
 local gamePath = fetch(getgitpath("games") .. tostring(game.PlaceId) .. ".lua")
 local gameList = decodeJson(getgitpath("src") .. "gameslist.json", {})
 local creditsList = decodeJson(getgitpath("src") .. "credits.json", {})
@@ -205,7 +234,7 @@ if not gamePath then
         if isfile(localPath) then
             local gameModule = loadModule(readfile(localPath))
             if gameModule then
-                utils.SafeCall(gameModule, Sections.Game.Container)
+                utils.SafeCall(gameModule, Sections.Game.Container, config)
                 handledLocally = true
             end
         end
@@ -219,7 +248,7 @@ if not gamePath then
 else
     local gameModule = loadModule(gamePath)
     if gameModule then
-        utils.SafeCall(gameModule, Sections.Game.Container)
+        utils.SafeCall(gameModule, Sections.Game.Container, config)
     else
         elements:Label("Game script failed to load.", Sections.Game.Container)
     end
@@ -239,10 +268,16 @@ for sect, c in pairs(creditsList) do
     end
 end
 
-elements:Toggle("Disable 3D Rendering", Sections.Settings.Container, function(v)
+elements:Toggle("Disable 3D Rendering", Sections.Settings.Container, config.settings.disable_3d_rendering, function(v)
+    local latest = readConfig()
+    latest.settings.disable_3d_rendering = v
+    writeConfig(latest)
     game:GetService("RunService"):Set3dRenderingEnabled(not v)
 end)
 
-elements:Toggle("Auto Rejoin (when kicked)", Sections.Settings.Container, function(v)
+elements:Toggle("Auto Rejoin (when kicked)", Sections.Settings.Container, config.settings.auto_rejoin_on_kick, function(v)
+    local latest = readConfig()
+    latest.settings.auto_rejoin_on_kick = v
+    writeConfig(latest)
     getgenv().autorjjjj = v
 end)

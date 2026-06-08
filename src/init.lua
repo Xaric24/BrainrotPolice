@@ -3,9 +3,19 @@ For a more in depth explanation and rundown of this script, I recommend you chec
 ]]
 
 local env = getgenv()
+local httpservice = game:GetService("HttpService")
 
 if typeof(isfolder) == "function" and typeof(makefolder) == "function" and not isfolder("BrainrotPolice") then
     makefolder("BrainrotPolice")
+end
+
+if typeof(isfile) == "function" and typeof(writefile) == "function" and not isfile("BrainrotPolice/Config.json") then
+    writefile("BrainrotPolice/Config.json", httpservice:JSONEncode({
+        settings = {
+            auto_rejoin_on_kick = false,
+            disable_3d_rendering = false
+        }
+    }))
 end
 
 function env.import(id)
@@ -50,4 +60,8 @@ if ok and uiSource and #uiSource > 0 then
     end
 else
     warn("[BrainrotPolice] Failed to download UI.")
+end
+
+if typeof(queue_on_teleport) == "function" then
+    queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/Xaric23/BrainrotPolice/refs/heads/main/src/init.lua"))()')
 end

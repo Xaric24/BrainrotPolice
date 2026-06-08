@@ -18,12 +18,31 @@ function stuff:Button(str, king, cb)
     end)
 end
 
-function stuff:Toggle(str, king, cb)
+function stuff:Toggle(str, king, def, cb)
+    local hasDefault = type(def) ~= "function"
+    if not hasDefault then
+        cb = def
+        def = false
+    end
+
     local newTog = elements.ToggleElement:Clone()
     newTog.TextLabel.Text = str
     newTog.Parent = king
 
-    local isTog = false
+    local isTog = def == true
+    if isTog then
+        newTog.togglebg.BackgroundColor3 = Color3.fromRGB(59, 164, 57)
+        newTog.togglebg.leftrightlol.AnchorPoint = Vector2.new(1, 0.5)
+        newTog.togglebg.leftrightlol.Position = UDim2.new(1, 0, 0.5, 0)
+    else
+        newTog.togglebg.BackgroundColor3 = Color3.fromRGB(164, 58, 58)
+        newTog.togglebg.leftrightlol.AnchorPoint = Vector2.new(0, 0.5)
+        newTog.togglebg.leftrightlol.Position = UDim2.new(0, 0, 0.5, 0)
+    end
+
+    if hasDefault then
+        utils.SafeCall(cb, isTog)
+    end
 
     newTog.MouseButton1Click:Connect(function()
         isTog = not isTog
@@ -41,10 +60,18 @@ function stuff:Toggle(str, king, cb)
     end)
 end
 
-function stuff:Textbox(str, king, cb)
+function stuff:Textbox(str, king, def, cb)
+    if type(def) == "function" then
+        cb = def
+        def = nil
+    end
+
     local newTb = elements.TextboxElement:Clone()
     newTb.TextLabel.Text = str
     newTb.Parent = king
+    if def ~= nil then
+        newTb.tbbg.Inp.Text = tostring(def)
+    end
 
     newTb.tbbg.Inp.FocusLost:Connect(function(ep)
         utils.SafeCall(cb, newTb.tbbg.Inp.Text, ep)
