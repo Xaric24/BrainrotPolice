@@ -30,6 +30,7 @@ function stuff:Toggle(str, king, def, cb)
         newTog.togglebg.leftrightlol.AnchorPoint = Vector2.new(0, 0.5)
         newTog.togglebg.leftrightlol.Position = UDim2.new(0, 0, 0.5, 0)
     end
+    task.defer(function() cb(isTog) end)
 
     newTog.MouseButton1Click:Connect(function()
         isTog = not isTog
