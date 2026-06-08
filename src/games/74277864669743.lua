@@ -2,13 +2,13 @@
 
 return function(section, data)
     local elements = loadstring(game:HttpGet(getgitpath("src").."elements.lua"))()
-    local httpservice = game:GetService("HttpService")
-
+    local env = getgenv()
     local plr = game:GetService("Players").LocalPlayer
-    getgenv().Farming = false
-    getgenv().FarmWings = false
-    getgenv().AutoBest = false
-    getgenv().AutoCollect = false
+
+    env.Farming = false
+    env.FarmWings = false
+    env.AutoBest = false
+    env.AutoCollect = false
 
     elements:Label("Auto rejoin on kick recommended. (Settings tab)", section)
 
@@ -18,17 +18,14 @@ return function(section, data)
     setdata.farmspeed = setdata.farmspeed or false
     setdata.farmcollect = setdata.farmcollect or false
     data[tostring(game.PlaceId)] = setdata
-    writefile("BrainrotPolice/Config.json", httpservice:JSONEncode(data))
+    writefile("BrainrotPolice/Config.json", game:GetService("HttpService"):JSONEncode(data))
 
     elements:Toggle("Farm Brainrots", section, setdata.farmrots, function(v)
-        local dec = httpservice:JSONDecode(readfile("BrainrotPolice/Config.json"))
-        dec[tostring(game.PlaceId)] = dec[tostring(game.PlaceId)] or {}
-        dec[tostring(game.PlaceId)].farmrots = v
-        writefile("BrainrotPolice/Config.json", httpservice:JSONEncode(dec))
+        env.setconfig("farmrots", v)
         if v then
-            getgenv().Farming = true
+            env.Farming = true
 
-            while getgenv().Farming do
+            while env.Farming do
                 for _, v in pairs(workspace.Brainrots:GetChildren()) do
                     if v:GetAttribute("Rarity") ~= "ADMIN"
                     and v:GetAttribute("Rarity") ~= "Lucky"
@@ -54,72 +51,61 @@ return function(section, data)
                 task.wait(0.1)
             end
         else
-            getgenv().Farming = false
+            env.Farming = false
         end
     end)
 
     elements:Toggle("Auto Buy Speed", section, setdata.farmspeed, function(v)
-        local dec = httpservice:JSONDecode(readfile("BrainrotPolice/Config.json"))
-        dec[tostring(game.PlaceId)] = dec[tostring(game.PlaceId)] or {}
-        dec[tostring(game.PlaceId)].farmspeed = v
-        writefile("BrainrotPolice/Config.json", httpservice:JSONEncode(dec))
+        env.setconfig("farmspeed", v)
         if v then
-            getgenv().FarmWings = true
+            env.FarmWings = true
 
-            while getgenv().FarmWings do
+            while env.FarmWings do
                 local Event = game:GetService("ReplicatedStorage").Libraries.Packet.RemoteEvent
-                Event:FireServer(
-                    buffer.fromstring("\x15\x01")
-                )
+                Event:FireServer(buffer.fromstring("\x15\x01"))
                 task.wait()
             end
         else
-            getgenv().FarmWings = false
+            env.FarmWings = false
         end
     end)
 
     elements:Toggle("Auto Equip Best", section, setdata.farmequip, function(v)
-        local dec = httpservice:JSONDecode(readfile("BrainrotPolice/Config.json"))
-        dec[tostring(game.PlaceId)] = dec[tostring(game.PlaceId)] or {}
-        dec[tostring(game.PlaceId)].farmequip = v
-        writefile("BrainrotPolice/Config.json", httpservice:JSONEncode(dec))
+        env.setconfig("farmequip", v)
         if v then
-            getgenv().AutoBest = true
+            env.AutoBest = true
 
-            while getgenv().AutoBest do
+            while env.AutoBest do
                 local Event = game:GetService("ReplicatedStorage").Libraries.Packet.RemoteEvent
-                Event:FireServer(
-                    buffer.fromstring("\x0E")
-                )
+                Event:FireServer(buffer.fromstring("\x0E"))
                 task.wait(1)
             end
         else
-            getgenv().AutoBest = false
+            env.AutoBest = false
         end
     end)
 
     elements:Toggle("Auto Collect", section, setdata.farmcollect, function(v)
-        local dec = httpservice:JSONDecode(readfile("BrainrotPolice/Config.json"))
-        dec[tostring(game.PlaceId)] = dec[tostring(game.PlaceId)] or {}
-        dec[tostring(game.PlaceId)].farmcollect = v
-        writefile("BrainrotPolice/Config.json", httpservice:JSONEncode(dec))
+        env.setconfig("farmcollect", v)
         if v then
-            getgenv().AutoCollect = true
+            env.AutoCollect = true
 
-            while getgenv().AutoCollect do
+            while env.AutoCollect do
                 for _, v in pairs(workspace.Plots:GetChildren()) do
                     if v:GetAttribute("Owner") == plr.UserId then
                         for i, pod in pairs(v.Podiums:GetChildren()) do
-                            firetouchinterest(plr.Character.Head, pod.Collect, true)
-                            task.wait()
-                            firetouchinterest(plr.Character.Head, pod.Collect, false)
+                            if pod:FindFirstChild("Collect") then
+                                firetouchinterest(plr.Character.Head, pod.Collect, true)
+                                task.wait()
+                                firetouchinterest(plr.Character.Head, pod.Collect, false)
+                            end
                         end
                     end
                 end
                 task.wait(2)
             end
         else
-            getgenv().AutoCollect = false
+            env.AutoCollect = false
         end
     end)
 end
