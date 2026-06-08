@@ -2,6 +2,7 @@
 
 return function(section, data)
     local elements = loadstring(game:HttpGet(getgitpath("src").."elements.lua"))()
+    local httpservice = game:GetService("HttpService")
 
     local plr = game:GetService("Players").LocalPlayer
     getgenv().Farming = false
@@ -16,8 +17,12 @@ return function(section, data)
     setdata.farmequip = setdata.farmequip or false
     setdata.farmspeed = setdata.farmspeed or false
     setdata.farmcollect = setdata.farmcollect or false
+    writefile("BrainrotPolice/Config.json", httpservice:JSONEncode(setdata))
 
     elements:Toggle("Farm Brainrots", section, setdata.farmrots, function(v)
+        local dec = httpservice:JSONDecode(readfile("BrainrotPolice/Config.json"))
+        dec[tostring(game.PlaceId)].farmrots = v
+        writefile("BrainrotPolice/Config.json", httpservice:JSONEncode(dec))
         if v then
             getgenv().Farming = true
 
@@ -52,6 +57,9 @@ return function(section, data)
     end)
 
     elements:Toggle("Auto Buy Speed", section, setdata.farmspeed, function(v)
+        local dec = httpservice:JSONDecode(readfile("BrainrotPolice/Config.json"))
+        dec[tostring(game.PlaceId)].farmspeed = v
+        writefile("BrainrotPolice/Config.json", httpservice:JSONEncode(dec))
         if v then
             getgenv().FarmWings = true
 
@@ -68,6 +76,9 @@ return function(section, data)
     end)
 
     elements:Toggle("Auto Equip Best", section, setdata.farmequip, function(v)
+        local dec = httpservice:JSONDecode(readfile("BrainrotPolice/Config.json"))
+        dec[tostring(game.PlaceId)].farmequip = v
+        writefile("BrainrotPolice/Config.json", httpservice:JSONEncode(dec))
         if v then
             getgenv().AutoBest = true
 
@@ -84,6 +95,9 @@ return function(section, data)
     end)
 
     elements:Toggle("Auto Collect", section, setdata.farmcollect, function(v)
+        local dec = httpservice:JSONDecode(readfile("BrainrotPolice/Config.json"))
+        dec[tostring(game.PlaceId)].farmcollect = v
+        writefile("BrainrotPolice/Config.json", httpservice:JSONEncode(dec))
         if v then
             getgenv().AutoCollect = true
 
