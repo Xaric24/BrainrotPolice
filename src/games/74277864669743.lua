@@ -11,10 +11,13 @@ return function(section, data)
 
     elements:Label("Auto rejoin on kick recommended. (Settings tab)", section)
 
-    local oldData = data
-    data = oldData[tostring(game.PlaceId)]
+    local setdata = data[tostring(game.PlaceId)] or {}
+    setdata.farmrots = setdata.farmrots or false
+    setdata.farmequip = setdata.farmequip or false
+    setdata.farmspeed = setdata.farmspeed or false
+    setdata.farmcollect = setdata.farmcollect or false
 
-    elements:Toggle("Farm Brainrots", section, data and data[tostring(game.PlaceId)], function(v)
+    elements:Toggle("Farm Brainrots", section, setdata.farmrots, function(v)
         if v then
             getgenv().Farming = true
 
@@ -48,7 +51,7 @@ return function(section, data)
         end
     end)
 
-    elements:Toggle("Auto Buy Speed", section, data and data[tostring(game.PlaceId)], function(v)
+    elements:Toggle("Auto Buy Speed", section, setdata.farmspeed, function(v)
         if v then
             getgenv().FarmWings = true
 
@@ -64,7 +67,7 @@ return function(section, data)
         end
     end)
 
-    elements:Toggle("Auto Equip Best", section, data and data[tostring(game.PlaceId)], function(v)
+    elements:Toggle("Auto Equip Best", section, setdata.farmequip, function(v)
         if v then
             getgenv().AutoBest = true
 
@@ -80,7 +83,7 @@ return function(section, data)
         end
     end)
 
-    elements:Toggle("Auto Collect", section, data and data[tostring(game.PlaceId)], function(v)
+    elements:Toggle("Auto Collect", section, setdata.farmcollect, function(v)
         if v then
             getgenv().AutoCollect = true
 
