@@ -1,8 +1,7 @@
 -- Reel for brainrots
 
-return function(section)
+return function(section, data)
     local elements = loadstring(game:HttpGet(getgitpath("src").."elements.lua"))()
-    local utils = loadstring(game:HttpGet(getgitpath("src").."utils.lua"))()
 
     local repStorage = game:GetService("ReplicatedStorage")
     local plr = game:GetService("Players").LocalPlayer
@@ -11,21 +10,30 @@ return function(section)
 
     getgenv().Farming = false
 
-    elements:Toggle("Farming", section, function(isOn)
-        utils.StartToggleLoop("Farming", isOn, function()
-            local fishing = repStorage:FindFirstChild("RemoteHandler") and repStorage.RemoteHandler:FindFirstChild("Fishing")
-            if fishing then
-                fishing:FireServer(
+    local setdata = data[tostring(game.PlaceId)] or {}
+    setdata.farming = setdata.farming or false
+    data[tostring(game.PlaceId)] = setdata
+    writefile("BrainrotPolice/Config.json", game:GetService("HttpService"):JSONEncode(data))
+
+    elements:Toggle("Farming", section, setdata.farming, function(isOn)
+        getgenv().setconfig("farming", isOn)
+        if isOn then
+            getgenv().Farming = true
+            while getgenv().Farming do
+                repStorage.RemoteHandler.Fishing:FireServer(
                     "Caught",
                     3
                 )
+                task.wait(0.1)
             end
-        end, 0.1)
+        else
+            getgenv().Farming = false
+        end
     end)
 
     elements:Button("Dupe Brainrot InHand", section, function()
-        local char = utils.GetCharacter(plr)
-        local br = char and char:FindFirstChildOfClass("Tool")
+        local char = plr.Character
+        local br = char:FindFirstChildOfClass("Tool")
         if br and br:GetAttribute("brainrot") then
             for plotNum = 1, 30 do
                 placeEv:FireServer("Add", "Plot" .. plotNum, br.Name)

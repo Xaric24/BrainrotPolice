@@ -215,6 +215,7 @@ Sections.Home.Container.bugsLabel.Text = Sections.Home.Container.bugsLabel.Text:
 Sections.Home.Container.discan.Text = Sections.Home.Container.discan.Text:gsub("redacted", "discord.gg/vaehz")
 Sections.Home.Container.ythead.Text = Sections.Home.Container.ythead.Text:gsub("redacted", "YouTube")
 Sections.Home.Container.execLabel.Text = "Executor: " .. getexec()
+Sections.Home.Container.versionLabel.Text = "Version: 0.21 BETA"
 
 local config = readConfig()
 local gamePath = fetch(getgitpath("games") .. tostring(game.PlaceId) .. ".lua")

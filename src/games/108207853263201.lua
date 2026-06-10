@@ -1,26 +1,34 @@
 -- "Rizz Tower" because its the first result when searching 'vaehz'
 
-return function(section)
+return function(section, data)
     local elements = loadstring(game:HttpGet(getgitpath("src").."elements.lua"))()
-    local utils = loadstring(game:HttpGet(getgitpath("src").."utils.lua"))()
 
     getgenv().WinFarm = false
 
     local plr = game:GetService("Players").LocalPlayer
 
-    elements:Toggle("Win Farm", section, function(bool)
-        utils.StartToggleLoop("WinFarm", bool, function()
-            local character = utils.GetCharacter(plr)
-            local head = character and character:FindFirstChild("Head")
-            local reward = workspace:FindFirstChild("TeleportWin") and workspace.TeleportWin:FindFirstChild("Reward")
+    local setdata = data[tostring(game.PlaceId)] or {}
+    setdata.winfarm = setdata.winfarm or false
+    data[tostring(game.PlaceId)] = setdata
+    writefile("BrainrotPolice/Config.json", game:GetService("HttpService"):JSONEncode(data))
 
-            if head and reward and typeof(firetouchinterest) == "function" then
-                utils.MoveCharacter(plr, Vector3.new(1, 477, -315))
-                task.wait()
-                firetouchinterest(head, reward, true)
-                task.wait()
-                firetouchinterest(head, reward, false)
+    elements:Toggle("Win Farm", section, setdata.winfarm, function(bool)
+        getgenv().setconfig("winfarm", bool)
+        if bool then
+            getgenv().WinFarm = true
+
+            while getgenv().WinFarm do
+                pcall(function()
+                    plr.Character:MoveTo(Vector3.new(1, 477, -315))
+                    task.wait()
+                    firetouchinterest(plr.Character.Head, workspace.TeleportWin.Reward, true)
+                    task.wait()
+                    firetouchinterest(plr.Character.Head, workspace.TeleportWin.Reward, false)
+                    task.wait()
+                end)
             end
-        end, 0.05)
+        else
+            getgenv().WinFarm = false
+        end
     end)
 end

@@ -2,7 +2,7 @@
 
 To suggest games, report bugs, etc. join https://discord.gg/vaehz.
 
-## Last update: 05/06/2026 {DD/MM/YYYY}
+## Last update: 08/06/2026 {DD/MM/YYYY}
 
 This is an open source little project made for a bunch of brainrot games. Don't take it too seriously.
 
@@ -29,7 +29,7 @@ return function(section)
 
     elements:Label("This is a Label", section)
 
-    elements:Toggle("This is a Toggle", section, function(bool)
+    elements:Toggle("This is a Toggle", section, false, function(bool)
         if bool then
             print("Enabled!")
         else
@@ -41,7 +41,7 @@ return function(section)
         print("Clicked!")
     end)
 
-    elements:Textbox("This is a TextBox", section, function(str)
+    elements:Textbox("This is a TextBox", section, "", function(str)
         print("Typed: " .. str)
     end)
 end

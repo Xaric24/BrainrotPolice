@@ -29,34 +29,31 @@ function stuff:Toggle(str, king, def, cb)
     newTog.TextLabel.Text = str
     newTog.Parent = king
 
-    local isTog = def == true
-    if isTog then
-        newTog.togglebg.BackgroundColor3 = Color3.fromRGB(59, 164, 57)
-        newTog.togglebg.leftrightlol.AnchorPoint = Vector2.new(1, 0.5)
-        newTog.togglebg.leftrightlol.Position = UDim2.new(1, 0, 0.5, 0)
-    else
-        newTog.togglebg.BackgroundColor3 = Color3.fromRGB(164, 58, 58)
-        newTog.togglebg.leftrightlol.AnchorPoint = Vector2.new(0, 0.5)
-        newTog.togglebg.leftrightlol.Position = UDim2.new(0, 0, 0.5, 0)
-    end
-
-    if hasDefault then
-        utils.SafeCall(cb, isTog)
-    end
-
-    newTog.MouseButton1Click:Connect(function()
-        isTog = not isTog
+    local function render(isTog)
         if isTog then
             newTog.togglebg.BackgroundColor3 = Color3.fromRGB(59, 164, 57)
             newTog.togglebg.leftrightlol.AnchorPoint = Vector2.new(1, 0.5)
             newTog.togglebg.leftrightlol.Position = UDim2.new(1, 0, 0.5, 0)
-            utils.SafeCall(cb, isTog)
         else
             newTog.togglebg.BackgroundColor3 = Color3.fromRGB(164, 58, 58)
             newTog.togglebg.leftrightlol.AnchorPoint = Vector2.new(0, 0.5)
             newTog.togglebg.leftrightlol.Position = UDim2.new(0, 0, 0.5, 0)
-            utils.SafeCall(cb, isTog)
         end
+    end
+
+    local isTog = def == true
+    render(isTog)
+
+    if hasDefault then
+        task.defer(function()
+            utils.SafeCall(cb, isTog)
+        end)
+    end
+
+    newTog.MouseButton1Click:Connect(function()
+        isTog = not isTog
+        render(isTog)
+        utils.SafeCall(cb, isTog)
     end)
 end
 
@@ -69,6 +66,7 @@ function stuff:Textbox(str, king, def, cb)
     local newTb = elements.TextboxElement:Clone()
     newTb.TextLabel.Text = str
     newTb.Parent = king
+
     if def ~= nil then
         newTb.tbbg.Inp.Text = tostring(def)
     end

@@ -1,6 +1,6 @@
 -- DUMP
 
-return function(section)
+return function(section, data)
     local elements = loadstring(game:HttpGet(getgitpath("src").."elements.lua"))()
 
     getgenv().AutoDig = false
@@ -8,11 +8,20 @@ return function(section)
     getgenv().collect = false
     getgenv().stealfromall = false
 
+    local setdata = data[tostring(game.PlaceId)] or {}
+    setdata.autodig = setdata.autodig or false
+    setdata.autobuy = setdata.autobuy or false
+    setdata.autocollect = setdata.autocollect or false
+    setdata.stealfromall = setdata.stealfromall or false
+    data[tostring(game.PlaceId)] = setdata
+    writefile("BrainrotPolice/Config.json", game:GetService("HttpService"):JSONEncode(data))
+
     local plr = game:GetService("Players").LocalPlayer
 
     local ShovelData = require(game:GetService("ReplicatedStorage").SharedSource.GameData.Shovels)
 
-    elements:Toggle("Steal from all", section, function(v)
+    elements:Toggle("Steal from all", section, setdata.stealfromall, function(v)
+        setconfig("stealfromall", v)
         getgenv().stealfromall = v
         if not getgenv().stealfromall then return end
         while getgenv().stealfromall do
@@ -46,7 +55,8 @@ return function(section)
         end
     end)
 
-    elements:Toggle("Auto Dig", section, function(v)
+    elements:Toggle("Auto Dig", section, setdata.autodig, function(v)
+        setconfig("autodig", v)
         getgenv().AutoDig = v
         if not getgenv().AutoDig then return end
         while getgenv().AutoDig do
@@ -82,7 +92,8 @@ return function(section)
         end
     end)
 
-    elements:Toggle("Auto Buy", section, function(v)
+    elements:Toggle("Auto Buy", section, setdata.autobuy, function(v)
+        setconfig("autobuy", v)
 
         getgenv().AutoBuy = v
         if not getgenv().AutoBuy then return end
@@ -122,7 +133,8 @@ return function(section)
         end
     end)
 
-    elements:Toggle("Auto Collect", section, function(v)
+    elements:Toggle("Auto Collect", section, setdata.autocollect, function(v)
+        setconfig("autocollect", v)
         getgenv().collect = v
         if not getgenv().collect then return end
         while getgenv().collect do

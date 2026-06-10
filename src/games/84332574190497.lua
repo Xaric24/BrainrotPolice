@@ -1,9 +1,14 @@
 -- +1 Wings for brainrot
 -- Developed by wirlypirly12
 
-return (function(section)
+return (function(section, data)
     local elements = loadstring(game:HttpGet(getgitpath("src").."elements.lua"))()
     local utils = loadstring(game:HttpGet(getgitpath("src").."utils.lua"))()
+
+    local setdata = data[tostring(game.PlaceId)] or {}
+    setdata.farmrots = setdata.farmrots or false
+    data[tostring(game.PlaceId)] = setdata
+    writefile("BrainrotPolice/Config.json", game:GetService("HttpService"):JSONEncode(data))
 
     local player = game:GetService("Players").LocalPlayer
 
@@ -101,7 +106,8 @@ return (function(section)
         end
     end)
 
-    elements:Toggle("Farming", section, function(value)
+    elements:Toggle("Farming", section, setdata.farmrots, function(value)
+        setconfig("farmrots", value)
         farming = value
     end)
 

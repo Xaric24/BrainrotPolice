@@ -1,6 +1,6 @@
---[[
-For a more in depth explanation and rundown of this script, I recommend you check out https://github.com/IcantAffordSynapse/BrainrotPolice
-]]
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
 
 local env = getgenv()
 local httpservice = game:GetService("HttpService")
@@ -39,6 +39,17 @@ function env.getgitpath(where)
     }
 
     return paths[where] or mainBuild
+end
+
+function env.setconfig(key, value)
+    if typeof(readfile) ~= "function" or typeof(writefile) ~= "function" then
+        return
+    end
+
+    local dec = httpservice:JSONDecode(readfile("BrainrotPolice/Config.json"))
+    dec[tostring(game.PlaceId)] = dec[tostring(game.PlaceId)] or {}
+    dec[tostring(game.PlaceId)][key] = value
+    writefile("BrainrotPolice/Config.json", httpservice:JSONEncode(dec))
 end
 
 game:GetService("GuiService").ErrorMessageChanged:Connect(function()

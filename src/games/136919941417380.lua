@@ -1,6 +1,6 @@
 -- Bike obby for brainrots
 
-return function(section)
+return function(section, data)
     local elements = loadstring(game:HttpGet(getgitpath("src").."elements.lua"))()
 
     local plr = game:GetService("Players").LocalPlayer
@@ -8,11 +8,17 @@ return function(section)
     getgenv().Farming = false
     getgenv().equip = false
 
-    elements:Toggle("Farm Brainrots", section, function(v)
+    local setdata = data[tostring(game.PlaceId)] or {}
+    setdata.farming = setdata.farming or false
+    setdata.equip = setdata.equip or false
+    data[tostring(game.PlaceId)] = setdata
+    writefile("BrainrotPolice/Config.json", game:GetService("HttpService"):JSONEncode(data))
+
+    elements:Toggle("Farm Brainrots", section, setdata.farming, function(v)
+        getgenv().setconfig("farming", v)
         getgenv().Farming = v
 
         if getgenv().Farming then
-
             while getgenv().Farming do
                 pcall(function()
                     plr.Character:MoveTo(Vector3.new(-3394, 1450, 7887))
@@ -46,7 +52,7 @@ return function(section)
                         end
                     end
                     plr.Character:MoveTo(Vector3.new(-3394, 1450, 4732))
-                     local secret = workspace.ItemSpawns:WaitForChild("8", 5)
+                    local secret = workspace.ItemSpawns:WaitForChild("8", 5)
                     for _,v in pairs(secret:GetChildren()) do
                         if v:IsA("Model") then
                             local prp = v.PrimaryPart
@@ -67,7 +73,8 @@ return function(section)
         end
     end)
 
-    elements:Toggle("Auto Equip Best", section, function(v)
+    elements:Toggle("Auto Equip Best", section, setdata.equip, function(v)
+        getgenv().setconfig("equip", v)
         getgenv().equip = v
         if getgenv().equip then
             while getgenv().equip do

@@ -1,18 +1,24 @@
 -- sail for brainrots
 
-return function(section)
+return function(section, data)
     local elements = loadstring(game:HttpGet(getgitpath("src").."elements.lua"))()
-    local utils = loadstring(game:HttpGet(getgitpath("src").."utils.lua"))()
     getgenv().Farming = false
     getgenv().Selling = false
     getgenv().ChosenZone = nil
     getgenv().MaxPrice = 0
 
+    local setdata = data[tostring(game.PlaceId)] or {}
+    setdata.farmrots = setdata.farmrots or false
+    setdata.farmsell = setdata.farmsell or false
+    setdata.farmzone = setdata.farmzone or "13"
+    setdata.maxprice = setdata.maxprice or "0"
+    data[tostring(game.PlaceId)] = setdata
+    writefile("BrainrotPolice/Config.json", game:GetService("HttpService"):JSONEncode(data))
+
     local player = game:GetService("Players").LocalPlayer
     local zonesFold = workspace.Zones
 
     local function parseValue(str)
-        str = tostring(str or ""):gsub("%s+", "")
         local suffixes = {
             K = 1e3,
             M = 1e6,
@@ -36,63 +42,75 @@ return function(section)
     end
 
 
-    elements:Textbox("Farm Zone (1-13)", section, function(v)
-        local zoneNumber = tonumber(v)
-        if zoneNumber then
-            getgenv().ChosenZone = zonesFold:FindFirstChild("Zone" .. zoneNumber)
+    elements:Textbox("Farm Zone (1-13)", section, setdata.farmzone, function(v)
+        getgenv().setconfig("farmzone", v)
+        getgenv().ChosenZone = zonesFold["Zone" .. v]
+    end)
+
+    elements:Toggle("Autofarm", section, setdata.farmrots, function(v)
+        getgenv().setconfig("farmrots", v)
+        if v then
+            getgenv().Farming = true
+
+            while getgenv().Farming do
+                local char = player.Character
+                local zone = getgenv().ChosenZone
+                local objects = zone and zone:FindFirstChild("Objects")
+
+                if char and objects then
+                    for _, brainrot in pairs(objects:GetChildren()) do
+                        if not getgenv().Farming then return end
+
+                        char:MoveTo(brainrot.PrimaryPart.Position)
+                        repeat
+                            fireproximityprompt(brainrot.ProximityPrompt)
+                            task.wait()
+                        until brainrot == nil or brainrot.Parent ~= objects
+
+                        char:MoveTo(workspace.Bases[player.Name].Root.Position)
+                        task.wait(0.5)
+                    end
+                end
+
+                task.wait(1)
+            end
+        else
+            getgenv().Farming = false
         end
     end)
 
-    elements:Toggle("Autofarm", section, function(v)
-        utils.StartToggleLoop("Farming", v, function()
-            local zone = getgenv().ChosenZone
-            local objects = zone and zone:FindFirstChild("Objects")
-            local baseRoot = workspace:FindFirstChild("Bases")
-                and workspace.Bases:FindFirstChild(player.Name)
-                and workspace.Bases[player.Name]:FindFirstChild("Root")
-            if not objects or not baseRoot then return end
-
-            for _, brainrot in pairs(objects:GetChildren()) do
-                if not getgenv().Farming then return end
-
-                local prompt = brainrot:FindFirstChildOfClass("ProximityPrompt")
-                if brainrot.PrimaryPart and prompt then
-                    utils.MoveCharacter(player, brainrot.PrimaryPart.Position)
-                    repeat
-                        utils.FirePrompt(prompt)
-                        task.wait()
-                    until not getgenv().Farming or brainrot.Parent ~= objects
-
-                    utils.MoveCharacter(player, baseRoot.Position)
-                    task.wait(0.5)
-                end
-            end
-        end, 1)
+    elements:Textbox("Max price", section, setdata.maxprice, function(v)
+        getgenv().setconfig("maxprice", v)
+        getgenv().MaxPrice = tonumber(v)
     end)
 
-    elements:Textbox("Max price", section, function(v)
-        getgenv().MaxPrice = parseValue(v)
-    end)
+    elements:Toggle("Auto Sell", section, setdata.farmsell, function(v)
+        getgenv().setconfig("farmsell", v)
+        if v then
+            getgenv().Selling = true
 
-    elements:Toggle("Auto Sell", section, function(v)
-        utils.StartToggleLoop("Selling", v, function()
-            local sellRemote = game:GetService("ReplicatedStorage").Shared.Classes.RemoteFunction.Remotes.EntityShared_SellEntity
-
-            for _, brainrot in pairs(player.Backpack:GetChildren()) do
-                if brainrot.Name ~= "Bat" then
-                    local valueLabel = brainrot:FindFirstChild("Handle")
-                        and brainrot.Handle:FindFirstChild("ObjectInfo")
-                        and brainrot.Handle.ObjectInfo:FindFirstChild("Value")
-                        and brainrot.Handle.ObjectInfo.Value:FindFirstChild("ValueLabel")
-
-                    if valueLabel and parseValue(valueLabel.Text) <= getgenv().MaxPrice then
-                        utils.SafeCall(function()
-                            sellRemote:InvokeServer(brainrot.Name)
-                        end)
+            while getgenv().Selling do
+                local char = player.Character
+                if char then
+                    for _, brainrot in pairs(player.Backpack:GetChildren()) do
+                        if brainrot.Name ~= "Bat" then
+                            spawn(function()
+                                pcall(function()
+                                    if parseValue(brainrot.Handle.ObjectInfo.Value.ValueLabel.Text) <= getgenv().MaxPrice then
+                                        local Event = game:GetService("ReplicatedStorage").Shared.Classes.RemoteFunction.Remotes.EntityShared_SellEntity
+                                        Event:InvokeServer(brainrot.Name)
+                                    end
+                                end)
+                            end)
+                        end
                     end
                 end
+
+                task.wait(3)
             end
-        end, 3)
+        else
+            getgenv().Selling = false
+        end
     end)
 
     elements:Button("Redeem Codes", section, function()
