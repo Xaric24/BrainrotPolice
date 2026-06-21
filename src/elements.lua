@@ -1,5 +1,6 @@
 local elements = import("rbxassetid://113037265185555")
 local stuff = {}
+local gameList = game:GetService("HttpService"):JSONDecode(game:HttpGet(getgitpath("src").. "gameslist.json"))
 
 function stuff:Label(str, king)
     local newLabel = elements.LabelElement:Clone()
@@ -69,6 +70,41 @@ function stuff:Unsupported(king, cb)
     end)
 
     newUs.glbtn.MouseButton1Click:Connect(cb)
+end
+
+function stuff:addGame(king, gname, gstate, cb)
+    local newGame = elements.GameElement:Clone()
+    newGame.ButtonElement.header.Text = gname
+    if gstate == "🟢" then
+        newGame.ButtonElement.status.ImageColor3 = Color3.fromRGB(0, 255, 0)
+    elseif gstate == "🟡" then
+        newGame.ButtonElement.status.ImageColor3 = Color3.fromRGB(255, 255, 0)
+    elseif gstate == "🔴" then
+        newGame.ButtonElement.status.ImageColor3 = Color3.fromRGB(255, 0, 0)
+    end
+    newGame.Parent = king
+
+    newGame.ButtonElement.MouseButton1Click:Connect(cb)
+end
+
+function stuff:Searchbar(king)
+    local newSearch = elements.searchBar:Clone()
+    newSearch.Parent = king
+    newSearch.searchbar.inp:GetPropertyChangedSignal("Text"):Connect(function()
+        for i, v in pairs(king:GetChildren()) do
+            if v:IsA("Frame") and not v == newSearch then
+                v:Destroy()
+            end
+        end
+
+        for i, v in pairs(gameList) do
+            if v["game"]:lower():find(newSearch.searchbar.inp.Text:lower()) then
+                stuff:addGame(king, v["game"], v["status"], function()
+                    game:GetService("ExperienceService"):LaunchExperience({placeId = v["id"]})
+                end)
+            end
+        end
+    end)
 end
 
 function stuff:CredHead(king, txt)
