@@ -2,7 +2,7 @@
 
 To suggest games, report bugs, etc. join https://discord.gg/vaehz.
 
-## Last update: 08/06/2026 {DD/MM/YYYY}
+## Last update: 21/06/2026 {DD/MM/YYYY}
 
 This is an open source little project made for a bunch of brainrot games. Don't take it too seriously.
 

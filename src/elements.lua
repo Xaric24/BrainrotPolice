@@ -1,6 +1,7 @@
 local elements = import("rbxassetid://113037265185555")
 local utils = loadstring(game:HttpGet(getgitpath("src") .. "utils.lua"))()
 local stuff = {}
+local gameList = game:GetService("HttpService"):JSONDecode(game:HttpGet(getgitpath("src").. "gameslist.json"))
 
 function stuff:Label(str, king)
     local newLabel = elements.LabelElement:Clone()
@@ -95,6 +96,52 @@ function stuff:Unsupported(king, cb)
 
     newUs.glbtn.MouseButton1Click:Connect(function()
         utils.SafeCall(cb)
+    end)
+end
+
+function stuff:addGame(king, gname, gstate, cb)
+    local newGame = elements.GameElement:Clone()
+    newGame.ButtonElement.header.Text = gname
+    local statusColors = {
+        Online = Color3.fromRGB(0, 255, 0),
+        Limited = Color3.fromRGB(255, 255, 0),
+        Offline = Color3.fromRGB(255, 0, 0)
+    }
+    if statusColors[gstate] then
+        newGame.ButtonElement.status.ImageColor3 = statusColors[gstate]
+    end
+    if gstate == "🟢" then
+        newGame.ButtonElement.status.ImageColor3 = Color3.fromRGB(0, 255, 0)
+    elseif gstate == "🟡" then
+        newGame.ButtonElement.status.ImageColor3 = Color3.fromRGB(255, 255, 0)
+    elseif gstate == "🔴" then
+        newGame.ButtonElement.status.ImageColor3 = Color3.fromRGB(255, 0, 0)
+    end
+    newGame.Parent = king
+
+    newGame.ButtonElement.MouseButton1Click:Connect(function()
+        utils.SafeCall(cb)
+    end)
+end
+
+-- to finish
+function stuff:Searchbar(king)
+    local newSearch = elements.searchBar:Clone()
+    newSearch.Parent = king
+    newSearch.searchbar.Inp:GetPropertyChangedSignal("Text"):Connect(function()
+        for i, v in pairs(king:GetChildren()) do
+            if v.Name == "GameElement" then
+                v:Destroy()
+            end
+        end
+
+        for i, v in pairs(gameList) do
+            if v["game"]:lower():find(newSearch.searchbar.Inp.Text:lower()) then
+                stuff:addGame(king, v["game"], v["status"], function()
+                    game:GetService("ExperienceService"):LaunchExperience({placeId = tonumber(v["id"]) or v["id"]})
+                end)
+            end
+        end
     end)
 end
 
