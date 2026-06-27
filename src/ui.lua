@@ -215,7 +215,7 @@ Sections.Home.Container.bugsLabel.Text = Sections.Home.Container.bugsLabel.Text:
 Sections.Home.Container.discan.Text = Sections.Home.Container.discan.Text:gsub("redacted", "discord.gg/vaehz")
 Sections.Home.Container.ythead.Text = Sections.Home.Container.ythead.Text:gsub("redacted", "YouTube")
 Sections.Home.Container.execLabel.Text = "Executor: " .. getexec()
-Sections.Home.Container.versionLabel.Text = "Version: 0.31 BETA"
+Sections.Home.Container.versionLabel.Text = "Version: 0.32 BETA"
 
 local config = readConfig()
 local gamePath = fetch(getgitpath("games") .. tostring(game.PlaceId) .. ".lua")
@@ -254,7 +254,6 @@ else
         elements:Label("Game script failed to load.", Sections.Game.Container)
     end
 end
-
 elements:Searchbar(Sections.GamesList.Container)
 for _, g in ipairs(gameList) do
     elements:addGame(Sections.GamesList.Container, g["game"], g["status"], function()

@@ -8,11 +8,37 @@ return function(section, data)
     local runTrigger = workspace.RunTrigger
 
     env.Farming = false
+    env.Autosell = false
 
     local setdata = data[tostring(game.PlaceId)] or {}
     setdata.farming = setdata.farming or false
+    setdata.autosell = setdata.autosell or false
     data[tostring(game.PlaceId)] = setdata
     writefile("BrainrotPolice/Config.json", game:GetService("HttpService"):JSONEncode(data))
+
+    local maxedCon
+    elements:Toggle("Autoequip + Sell when maxed", section, env.Autosell, function(v)
+        env.Autosell = v
+        getgenv().setconfig("autosell", v)
+        if not v then if maxedCon then maxedCon:Disconnect() end return end
+
+        local Event = game:GetService("ReplicatedStorage").Events.Notify
+        maxedCon = Event.OnClientEvent:Connect(function(arg1)
+            if arg1:find("Max 75") then
+                local Event = game:GetService("ReplicatedStorage").Events.EquipBest
+                Event:FireServer()
+
+                task.wait(1)
+
+                local brlist = plr.Backpack:GetChildren()
+
+                local Event = game:GetService("ReplicatedStorage").Events.SellAllBrainrots
+                Event:FireServer(
+                    brlist
+                )
+            end
+        end)
+    end)
 
     elements:Toggle("Autofarm", section, env.Farming, function(v)
         env.Farming = v
@@ -32,12 +58,22 @@ return function(section, data)
                     task.wait()
                 until firstbr
 
-                plr.Character:MoveTo(firstbr.PrimaryPart.Position)
+                local bestbr = nil
+                local mostval = 0
+                for i, v in pairs(workspace.Locations.End.Brainrots:GetChildren()) do
+                    if v.MoneyPerSecond.Value > mostval
+                        and v.PrimaryPart.ProximityPrompt.ActionText ~= "STEAL OP" then
+                        mostval = v.MoneyPerSecond.Value
+                        bestbr = v
+                    end
+                end
+
+                plr.Character:MoveTo(bestbr.PrimaryPart.Position)
                 task.wait()
                 repeat
-                    fireproximityprompt(firstbr.PrimaryPart.ProximityPrompt)
+                    fireproximityprompt(bestbr.PrimaryPart.ProximityPrompt)
                     task.wait()
-                until not firstbr or firstbr.Parent ~= workspace.Locations.End.Brainrots
+                until not bestbr or bestbr.Parent ~= workspace.Locations.End.Brainrots
                 task.wait()
                 plr.Character:MoveTo(workspace.EscapeHitbox.Position)
             end)

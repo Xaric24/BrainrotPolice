@@ -58,6 +58,10 @@ game:GetService("GuiService").ErrorMessageChanged:Connect(function()
     end
 end)
 
+pcall(function()
+    game:GetService("GuiService"):SetGameplayPausedNotificationEnabled(false)
+end)
+
 local ok, uiSource = pcall(function()
     return game:HttpGet(getgitpath("src") .. "ui.lua")
 end)
