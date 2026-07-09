@@ -51,6 +51,10 @@ return function(section, data)
     data[tostring(game.PlaceId)] = setdata
     writefile("BrainrotPolice/Config.json", game:GetService("HttpService"):JSONEncode(data))
 
+    elements:Button("Teleport to Base", section, function()
+        utils.MoveCharacter(plr, dropPosition)
+    end)
+
     elements:Toggle("Farm Brainrots", section, setdata.farmrots, function(v)
         getgenv().setconfig("farmrots", v)
         if v then
