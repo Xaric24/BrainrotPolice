@@ -16,6 +16,15 @@ function utils.GetCharacter(player)
     return player.Character or player.CharacterAdded:Wait()
 end
 
+function utils.GetHumanoid(player)
+    local character = utils.GetCharacter(player)
+    if not character then
+        return nil, nil
+    end
+
+    return character:FindFirstChildOfClass("Humanoid"), character
+end
+
 function utils.GetRoot(player)
     local character = utils.GetCharacter(player)
     if not character then
@@ -27,7 +36,7 @@ end
 
 function utils.MoveCharacter(player, position)
     local character = utils.GetCharacter(player)
-    if not character then
+    if not character or typeof(position) ~= "Vector3" then
         return false
     end
 
@@ -36,12 +45,40 @@ function utils.MoveCharacter(player, position)
 end
 
 function utils.FirePrompt(prompt)
-    if prompt and typeof(fireproximityprompt) == "function" then
+    if prompt and prompt:IsA("ProximityPrompt") and prompt.Enabled ~= false and typeof(fireproximityprompt) == "function" then
         fireproximityprompt(prompt)
         return true
     end
 
     return false
+end
+
+function utils.FindPrompt(root, preferredName)
+    if not root then
+        return nil
+    end
+
+    if preferredName then
+        local named = root:FindFirstChild(preferredName, true)
+        if named and named:IsA("ProximityPrompt") then
+            return named
+        end
+    end
+
+    return utils.FindFirstDescendantOfClass(root, "ProximityPrompt")
+end
+
+function utils.WaitForChildPath(root, path, timeout)
+    local current = root
+    for _, name in ipairs(path) do
+        if not current then
+            return nil
+        end
+
+        current = current:WaitForChild(name, timeout)
+    end
+
+    return current
 end
 
 function utils.StartToggleLoop(flagName, enabled, callback, delay)

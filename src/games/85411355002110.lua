@@ -2,6 +2,7 @@
 
 return function(section, data)
     local elements = loadstring(game:HttpGet(getgitpath("src").."elements.lua"))()
+    local utils = loadstring(game:HttpGet(getgitpath("src").."utils.lua"))()
     local env = getgenv()
     local plr = game:GetService("Players").LocalPlayer
 
@@ -14,37 +15,49 @@ return function(section, data)
 
     local endPos = Vector3.new(-74, 63, 15784)
     local colPos = Vector3.new(-74, 20, -447)
+    local function hasHeldModel()
+        local character = utils.GetCharacter(plr)
+        return character and character:FindFirstChildOfClass("Model") ~= nil
+    end
 
     elements:Toggle("Farm Brainrots", section, setdata.farmrots, function(v)
         env.Farming = v
         env.setconfig("farmrots", v)
         if not env.Farming then return end
         while env.Farming do
-            plr.Character:MoveTo(endPos)
-            local lastPlace = workspace.Map.Spawners:WaitForChild("???xLuck"):WaitForChild("???")
+            utils.MoveCharacter(plr, endPos)
+            local spawners = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Spawners")
+            local lastPlace = spawners and utils.WaitForChildPath(spawners, {"???xLuck", "???"}, 3)
 
             pcall(function()
-                for i, v in pairs(lastPlace:GetChildren()) do
+                if not lastPlace then
+                    return
+                end
+
+                for _, v in pairs(lastPlace:GetChildren()) do
                     if v:IsA("Model") then
                         repeat
                             task.wait()
                         until not plr.GameplayPaused
 
                         if v.PrimaryPart then
-                            plr.Character:MoveTo(v.PrimaryPart.Position)
+                            utils.MoveCharacter(plr, v.PrimaryPart.Position)
 
                             local prox = v.PrimaryPart:FindFirstChildOfClass("ProximityPrompt")
+                            local started = os.clock()
                             repeat
-                                fireproximityprompt(prox)
-                                task.wait()
-                            until not v or v.Parent ~= lastPlace
+                                utils.FirePrompt(prox)
+                                task.wait(0.1)
+                            until not v
+                                or v.Parent ~= lastPlace
+                                or os.clock() - started > 4
 
                             task.wait(0.5)
 
                             repeat
-                                plr.Character:MoveTo(colPos)
+                                utils.MoveCharacter(plr, colPos)
                                 task.wait()
-                            until not plr.Character:FindFirstChildOfClass("Model")
+                            until not hasHeldModel()
 
                             break
                         end

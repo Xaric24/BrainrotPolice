@@ -46,7 +46,19 @@ function env.setconfig(key, value)
         return
     end
 
-    local dec = httpservice:JSONDecode(readfile("BrainrotPolice/Config.json"))
+    local ok, dec = pcall(function()
+        return httpservice:JSONDecode(readfile("BrainrotPolice/Config.json"))
+    end)
+
+    if not ok or type(dec) ~= "table" then
+        dec = {
+            settings = {
+                auto_rejoin_on_kick = false,
+                disable_3d_rendering = false
+            }
+        }
+    end
+
     dec[tostring(game.PlaceId)] = dec[tostring(game.PlaceId)] or {}
     dec[tostring(game.PlaceId)][key] = value
     writefile("BrainrotPolice/Config.json", httpservice:JSONEncode(dec))
