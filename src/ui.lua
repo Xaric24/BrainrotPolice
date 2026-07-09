@@ -5,7 +5,8 @@ end
 local coregui = game:GetService("CoreGui")
 local userinputservice = game:GetService("UserInputService")
 local httpservice = game:GetService("HttpService")
-local exservice = game:GetService("ExperienceService")
+local players = game:GetService("Players")
+local teleportService = game:GetService("TeleportService")
 local utils = loadstring(game:HttpGet(getgitpath("src") .. "utils.lua"))()
 
 local DEFAULT_CONFIG = {
@@ -81,6 +82,17 @@ local function loadModule(source)
     end
 
     return nil
+end
+
+local function teleportToGame(placeId)
+    local numericPlaceId = tonumber(placeId)
+    if not numericPlaceId then
+        return
+    end
+
+    pcall(function()
+        teleportService:Teleport(numericPlaceId, players.LocalPlayer)
+    end)
 end
 
 local ui = import("rbxassetid://75281832304062")
@@ -257,7 +269,7 @@ end
 elements:Searchbar(Sections.GamesList.Container)
 for _, g in ipairs(gameList) do
     elements:addGame(Sections.GamesList.Container, g["game"], g["status"], function()
-        exservice:LaunchExperience({placeId = tonumber(g.id) or g.id})
+        teleportToGame(g.id)
     end)
 end
 

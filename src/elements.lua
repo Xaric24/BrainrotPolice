@@ -2,6 +2,19 @@ local elements = import("rbxassetid://113037265185555")
 local utils = loadstring(game:HttpGet(getgitpath("src") .. "utils.lua"))()
 local stuff = {}
 local gameList = game:GetService("HttpService"):JSONDecode(game:HttpGet(getgitpath("src").. "gameslist.json"))
+local players = game:GetService("Players")
+local teleportService = game:GetService("TeleportService")
+
+local function teleportToGame(placeId)
+    local numericPlaceId = tonumber(placeId)
+    if not numericPlaceId then
+        return
+    end
+
+    pcall(function()
+        teleportService:Teleport(numericPlaceId, players.LocalPlayer)
+    end)
+end
 
 function stuff:Label(str, king)
     local newLabel = elements.LabelElement:Clone()
@@ -138,7 +151,7 @@ function stuff:Searchbar(king)
         for i, v in pairs(gameList) do
             if v["game"]:lower():find(newSearch.searchbar.Inp.Text:lower()) then
                 stuff:addGame(king, v["game"], v["status"], function()
-                    game:GetService("ExperienceService"):LaunchExperience({placeId = tonumber(v["id"]) or v["id"]})
+                    teleportToGame(v["id"])
                 end)
             end
         end
