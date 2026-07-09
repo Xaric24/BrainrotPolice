@@ -9,7 +9,7 @@ This is an open source little project made for a bunch of brainrot games. Don't 
 https://wearentdevs.net/
 
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/Xaric24/BrainrotPolice-updated/refs/heads/main/src/init.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Xaric24/BrainrotPolice/refs/heads/main/src/init.lua"))()
 ```
 
 ## Adding Custom Games
