@@ -11,6 +11,41 @@ return function(section, data)
 
     getgenv().FarmRots = false
 
+    local function getSpawnZone(model)
+        local zone = tonumber(model:GetAttribute("SpawnZone"))
+        if zone then
+            return zone
+        end
+
+        return -1
+    end
+
+    local function findLastZoneBrainrot()
+        if not entitiesFolder then
+            return nil, nil, nil
+        end
+
+        local bestBrainrot
+        local bestPrompt
+        local bestPart
+        local highestZone = -1
+
+        for _, br in pairs(entitiesFolder:GetChildren()) do
+            local zone = getSpawnZone(br)
+            local primaryPart = br.PrimaryPart
+            local prompt = utils.FindPrompt(br, "TakeBrainrotPrompt")
+
+            if zone > highestZone and primaryPart and prompt then
+                highestZone = zone
+                bestBrainrot = br
+                bestPrompt = prompt
+                bestPart = primaryPart
+            end
+        end
+
+        return bestBrainrot, bestPrompt, bestPart
+    end
+
     local setdata = data[tostring(game.PlaceId)] or {}
     setdata.farmrots = setdata.farmrots or false
     data[tostring(game.PlaceId)] = setdata
@@ -28,30 +63,24 @@ return function(section, data)
                     utils.MoveCharacter(plr, grabPosition)
                     task.wait(0.35)
 
-                    for _, br in pairs(entitiesFolder:GetChildren()) do
-                        if not getgenv().FarmRots then
-                            break
-                        end
+                    local br, prompt, primaryPart = findLastZoneBrainrot()
 
-                        local primaryPart = br.PrimaryPart
-                        local prompt = utils.FindPrompt(br, "TakeBrainrotPrompt")
+                    if br and prompt and primaryPart then
+                        utils.MoveCharacter(plr, primaryPart.Position)
+                        task.wait(0.1)
 
-                        if tostring(br:GetAttribute("SpawnZone")) == "22" and primaryPart and prompt then
-                            utils.MoveCharacter(plr, primaryPart.Position)
+                        local started = os.clock()
+                        repeat
+                            utils.FirePrompt(prompt)
+                            task.wait(0.1)
+                        until not getgenv().FarmRots
+                            or not br.Parent
+                            or not primaryPart.Parent
+                            or primaryPart:FindFirstChild("Attachment")
+                            or os.clock() - started > 4
 
-                            local started = os.clock()
-                            repeat
-                                utils.FirePrompt(prompt)
-                                task.wait(0.1)
-                            until not getgenv().FarmRots
-                                or not br.Parent
-                                or not primaryPart.Parent
-                                or primaryPart:FindFirstChild("Attachment")
-                                or os.clock() - started > 4
-
-                            utils.MoveCharacter(plr, dropPosition)
-                            task.wait(1)
-                        end
+                        utils.MoveCharacter(plr, dropPosition)
+                        task.wait(1)
                     end
                 end
 
