@@ -2,8 +2,8 @@ local elements = import("rbxassetid://113037265185555")
 local utils = loadstring(game:HttpGet(getgitpath("src") .. "utils.lua"))()
 local stuff = {}
 local gameList = game:GetService("HttpService"):JSONDecode(game:HttpGet(getgitpath("src").. "gameslist.json"))
-local players = game:GetService("Players")
-local teleportService = game:GetService("TeleportService")
+local experienceService = game:GetService("ExperienceService")
+local guiService = game:GetService("GuiService")
 
 local function teleportToGame(placeId)
     local numericPlaceId = tonumber(placeId)
@@ -11,9 +11,26 @@ local function teleportToGame(placeId)
         return
     end
 
-    pcall(function()
-        teleportService:Teleport(numericPlaceId, players.LocalPlayer)
+    local launchUrl = "roblox://experiences/start?placeId=" .. tostring(numericPlaceId)
+    local opened = pcall(function()
+        guiService:OpenBrowserWindow(launchUrl)
     end)
+
+    if opened then
+        return
+    end
+
+    local launched = pcall(function()
+        experienceService:LaunchExperience({placeId = numericPlaceId})
+    end)
+
+    if launched then
+        return
+    end
+
+    if typeof(setclipboard) == "function" then
+        setclipboard("https://www.roblox.com/games/" .. tostring(numericPlaceId))
+    end
 end
 
 function stuff:Label(str, king)

@@ -5,8 +5,8 @@ end
 local coregui = game:GetService("CoreGui")
 local userinputservice = game:GetService("UserInputService")
 local httpservice = game:GetService("HttpService")
-local players = game:GetService("Players")
-local teleportService = game:GetService("TeleportService")
+local experienceService = game:GetService("ExperienceService")
+local guiService = game:GetService("GuiService")
 local utils = loadstring(game:HttpGet(getgitpath("src") .. "utils.lua"))()
 
 local DEFAULT_CONFIG = {
@@ -90,9 +90,26 @@ local function teleportToGame(placeId)
         return
     end
 
-    pcall(function()
-        teleportService:Teleport(numericPlaceId, players.LocalPlayer)
+    local launchUrl = "roblox://experiences/start?placeId=" .. tostring(numericPlaceId)
+    local opened = pcall(function()
+        guiService:OpenBrowserWindow(launchUrl)
     end)
+
+    if opened then
+        return
+    end
+
+    local launched = pcall(function()
+        experienceService:LaunchExperience({placeId = numericPlaceId})
+    end)
+
+    if launched then
+        return
+    end
+
+    if typeof(setclipboard) == "function" then
+        setclipboard("https://www.roblox.com/games/" .. tostring(numericPlaceId))
+    end
 end
 
 local ui = import("rbxassetid://75281832304062")
