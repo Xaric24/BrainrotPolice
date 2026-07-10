@@ -72,10 +72,11 @@ function stuff:Toggle(str, king, def, cb)
         end
     end
 
-    local isTog = def == true
+    local shouldAutoResume = getgenv().BrainrotPoliceAutoResume == true
+    local isTog = shouldAutoResume and def == true
     render(isTog)
 
-    if hasDefault then
+    if hasDefault and shouldAutoResume then
         task.defer(function()
             utils.SafeCall(cb, isTog)
         end)

@@ -94,7 +94,7 @@ return (function(section, data)
     end
 
     task.spawn(function()
-        while task.wait() do
+        while task.wait(0.25) do
             if farming then
                 local cosmics = getSpawnData("Cosmic")
                 if cosmics == nil then

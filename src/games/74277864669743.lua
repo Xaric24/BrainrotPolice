@@ -65,7 +65,7 @@ return function(section, data)
             while env.FarmWings do
                 local Event = game:GetService("ReplicatedStorage").Libraries.Packet.RemoteEvent
                 Event:FireServer(buffer.fromstring("\x15\x01"))
-                task.wait()
+                task.wait(1)
             end
         else
             env.FarmWings = false
@@ -93,18 +93,21 @@ return function(section, data)
             env.AutoCollect = true
 
             while env.AutoCollect do
+                local touched = false
                 for _, v in pairs(workspace.Plots:GetChildren()) do
                     if v:GetAttribute("Owner") == plr.UserId then
                         for i, pod in pairs(v.Podiums:GetChildren()) do
                             if pod:FindFirstChild("Collect") then
                                 firetouchinterest(plr.Character.Head, pod.Collect, true)
-                                task.wait()
+                                task.wait(0.2)
                                 firetouchinterest(plr.Character.Head, pod.Collect, false)
+                                touched = true
+                                task.wait(0.5)
                             end
                         end
                     end
                 end
-                task.wait(2)
+                task.wait(touched and 5 or 2)
             end
         else
             env.AutoCollect = false
